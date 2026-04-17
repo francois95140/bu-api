@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: bibliotheque
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/bibliotheque
+    username: esgi
+    password: esgi
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
