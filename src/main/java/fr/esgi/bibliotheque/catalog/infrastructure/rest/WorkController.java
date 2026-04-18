@@ -25,21 +25,18 @@ public class WorkController {
     private final SearchWorks searchWorks;
     private final DeleteWork deleteWork;
     private final AddCopy addCopy;
-    private final UpdateCopyStatus updateCopyStatus;
     private final WorkMapper mapper;
 
     public WorkController(CreateWork createWork, UpdateWork updateWork,
                            SearchWorkByIdWithCopies searchWorkByIdWithCopies,
                            SearchWorks searchWorks, DeleteWork deleteWork,
-                           AddCopy addCopy, UpdateCopyStatus updateCopyStatus,
-                           WorkMapper mapper) {
+                           AddCopy addCopy, WorkMapper mapper) {
         this.createWork = createWork;
         this.updateWork = updateWork;
         this.searchWorkByIdWithCopies = searchWorkByIdWithCopies;
         this.searchWorks = searchWorks;
         this.deleteWork = deleteWork;
         this.addCopy = addCopy;
-        this.updateCopyStatus = updateCopyStatus;
         this.mapper = mapper;
     }
 
@@ -89,10 +86,4 @@ public class WorkController {
         return ResponseEntity.created(uri).build();
     }
 
-    @PatchMapping("/copies/{copyId}/status")
-    public ResponseEntity<Void> updateCopyStatus(@PathVariable String copyId,
-                                                   @Valid @RequestBody UpdateCopyStatusRequest request) {
-        updateCopyStatus.handle(new CopyId(copyId), request);
-        return ResponseEntity.ok().build();
-    }
 }
