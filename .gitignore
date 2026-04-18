@@ -47,3 +47,6 @@ logs/
 ### Spring Boot local config ###
 application-local.properties
 application-local.yml
+
+### Git Worktrees ###
+.worktrees/
