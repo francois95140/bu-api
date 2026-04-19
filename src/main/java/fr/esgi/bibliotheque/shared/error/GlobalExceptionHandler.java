@@ -37,6 +37,15 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthentication(
+            AuthenticationException ex, HttpServletRequest req) {
+        log.warn("Authentication failure on {}: {}", req.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+            new ErrorResponse(401, "Unauthorized", ex.getMessage(), req.getRequestURI())
+        );
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusiness(
             BusinessException ex, HttpServletRequest req) {

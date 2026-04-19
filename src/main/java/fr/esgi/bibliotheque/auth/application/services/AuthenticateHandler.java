@@ -4,7 +4,7 @@ import fr.esgi.bibliotheque.auth.application.gateways.AuthUserGateway;
 import fr.esgi.bibliotheque.auth.application.models.AuthRequest;
 import fr.esgi.bibliotheque.auth.application.usecases.Authenticate;
 import fr.esgi.bibliotheque.auth.domain.TokenPair;
-import fr.esgi.bibliotheque.shared.error.BusinessException;
+import fr.esgi.bibliotheque.shared.error.AuthenticationException;
 import fr.esgi.bibliotheque.shared.security.JwtTokenService;
 import fr.esgi.bibliotheque.users.domain.UserStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,14 +32,14 @@ public class AuthenticateHandler implements Authenticate {
     @Override
     public TokenPair handle(AuthRequest request) {
         var user = userGateway.findByEmail(request.email())
-                .orElseThrow(() -> new BusinessException("Email ou mot de passe incorrect"));
+                .orElseThrow(() -> new AuthenticationException("Email ou mot de passe incorrect"));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new BusinessException("Email ou mot de passe incorrect");
+            throw new AuthenticationException("Email ou mot de passe incorrect");
         }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new BusinessException("Compte bloqué ou suspendu");
+            throw new AuthenticationException("Compte bloqué ou suspendu");
         }
 
         var roles = List.of("ROLE_" + mapRole(user.getCategory().name()));
