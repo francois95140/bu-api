@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 class UserSpecificationBuilder {
 
     Specification<User> build(UserFilters filters) {
-        Specification<User> spec = Specification.where(null);
+        Specification<User> spec = (root, query, cb) -> cb.conjunction();
 
         if (filters.name() != null && !filters.name().isBlank()) {
             spec = spec.and(UserSpecifications.hasName(filters.name()));

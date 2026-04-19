@@ -17,7 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class
+SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
 
@@ -46,7 +47,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/works/**").hasAnyRole("LIBRARIAN", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/works/**").hasAnyRole("LIBRARIAN", "ADMIN")
                         .requestMatchers("/api/copies/**").hasAnyRole("LIBRARIAN", "ADMIN")
-                        // Tout utilisateur authentifié
+                        // Circulation : emprunt/retour/perte gérés par le bibliothécaire
+                        .requestMatchers(HttpMethod.POST, "/api/loans").hasAnyRole("LIBRARIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/loans/return").hasAnyRole("LIBRARIAN", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/loans/*/lost").hasAnyRole("LIBRARIAN", "ADMIN")
+                        // Réservation : retrait géré par le bibliothécaire
+                        .requestMatchers(HttpMethod.POST, "/api/holds/*/pickup").hasAnyRole("LIBRARIAN", "ADMIN")
+                        // Tout utilisateur authentifié (prolongation, réservation, consultation)
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
