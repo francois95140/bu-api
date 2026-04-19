@@ -1,15 +1,18 @@
 package fr.esgi.bibliotheque.reporting.infrastructure.persistence;
 
+import fr.esgi.bibliotheque.circulation.domain.LoanStatus;
 import fr.esgi.bibliotheque.reporting.application.gateways.ReportingRepository;
 import fr.esgi.bibliotheque.reporting.application.models.AcquisitionEntry;
 import fr.esgi.bibliotheque.reporting.application.models.OverdueLoanEntry;
 import fr.esgi.bibliotheque.reporting.application.models.TopLoanEntry;
+import fr.esgi.bibliotheque.users.domain.UserCategory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
@@ -38,18 +41,29 @@ public class JpaReportingRepository implements ReportingRepository {
 
     @Override
     public List<OverdueLoanEntry> findOverdueLoans() {
-        return em.createQuery("""
-                SELECT new fr.esgi.bibliotheque.reporting.application.models.OverdueLoanEntry(
-                    l.id.value, l.copyId.value, l.userId.value,
-                    u.email, u.category, l.dueAt,
-                    FUNCTION('DATEDIFF', CURRENT_TIMESTAMP, l.dueAt))
+        record RawOverdue(String loanId, String copyId, String userId,
+                          String email, UserCategory category, Instant dueAt) {}
+
+        var now = Instant.now();
+        var rows = em.createQuery("""
+                SELECT l.id.value, l.copyId.value, l.userId.value,
+                       u.email, u.category, l.dueAt
                 FROM Loan l
                 JOIN User u ON u.id.value = l.userId.value
-                WHERE l.status IN ('ACTIVE', 'OVERDUE')
-                  AND l.dueAt < CURRENT_TIMESTAMP
+                WHERE l.status IN (:statuses)
+                  AND l.dueAt < :now
                 ORDER BY l.dueAt ASC
-                """, OverdueLoanEntry.class)
+                """, Object[].class)
+                .setParameter("statuses", List.of(LoanStatus.ACTIVE, LoanStatus.OVERDUE))
+                .setParameter("now", now)
                 .getResultList();
+
+        return rows.stream()
+                .map(r -> new OverdueLoanEntry(
+                        (String) r[0], (String) r[1], (String) r[2],
+                        (String) r[3], (UserCategory) r[4], (Instant) r[5],
+                        ChronoUnit.DAYS.between((Instant) r[5], now)))
+                .toList();
     }
 
     @Override
