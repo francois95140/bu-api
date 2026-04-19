@@ -14,6 +14,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -27,17 +28,38 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DatabaseSeeder.class);
 
-    private final EntityManager em;
-    private final PasswordEncoder passwordEncoder;
+    private final SeedService seedService;
 
-    public DatabaseSeeder(EntityManager em, PasswordEncoder passwordEncoder) {
-        this.em = em;
-        this.passwordEncoder = passwordEncoder;
+    public DatabaseSeeder(SeedService seedService) {
+        this.seedService = seedService;
     }
 
     @Override
-    @Transactional
     public void run(ApplicationArguments args) {
+        try {
+            seedService.seed();
+        } catch (Exception e) {
+            log.error("Seed failed: {}", e.getMessage(), e);
+        }
+    }
+
+    // Justification : méthode séparée en @Service pour que @Transactional soit appliqué via proxy Spring
+    @Service
+    @Profile("dev")
+    static class SeedService {
+
+        private static final Logger log = LoggerFactory.getLogger(SeedService.class);
+
+        private final EntityManager em;
+        private final PasswordEncoder passwordEncoder;
+
+        SeedService(EntityManager em, PasswordEncoder passwordEncoder) {
+            this.em = em;
+            this.passwordEncoder = passwordEncoder;
+        }
+
+        @Transactional
+        public void seed() {
         if (alreadySeeded()) {
             log.info("Database already seeded, skipping.");
             return;
@@ -107,6 +129,27 @@ public class DatabaseSeeder implements ApplicationRunner {
                 now.minus(60, ChronoUnit.DAYS), now.minus(20, ChronoUnit.DAYS),
                 2, LoanStatus.RETURNED, "idem-borrow-004", now.minus(22, ChronoUnit.DAYS)));
 
+        // work4 : toutes les copies empruntées → pour tester la file d'attente QUEUED
+        var work4 = Work.create(new WorkId("w-004"), "9780201485677", "Refactoring",
+                "Martin Fowler", "Addison-Wesley", 1999, "Génie logiciel", "EN", "Améliorer la conception du code existant");
+        em.persist(work4);
+
+        var copy7 = Copy.create(new CopyId("c-007"), "BC007", work4, "CAMPUS-A", "INF-04", "BON", now);
+        copy7.updateStatus(CopyStatus.ON_LOAN);
+        var copy8 = Copy.create(new CopyId("c-008"), "BC008", work4, "CAMPUS-B", "INF-04", "BON", now);
+        copy8.updateStatus(CopyStatus.ON_LOAN);
+        em.persist(copy7); em.persist(copy8);
+
+        // Prêt actif teacher sur copy7 (pour tester retour + activation hold)
+        em.persist(loan("l-005", copy7.getId(), teacher.getId(),
+                now.minus(10, ChronoUnit.DAYS), now.plus(5, ChronoUnit.DAYS),
+                0, LoanStatus.ACTIVE, "idem-borrow-005", null));
+
+        // Prêt actif student1 sur copy8 — renewCount=2 (quota max étudiant atteint)
+        em.persist(loan("l-006", copy8.getId(), student1.getId(),
+                now.minus(15, ChronoUnit.DAYS), now.plus(6, ChronoUnit.DAYS),
+                2, LoanStatus.ACTIVE, "idem-borrow-006", null));
+
         // ── HOLDS ─────────────────────────────────────────────────────────────
         // READY_FOR_PICKUP : student1 attend work3/copy6
         em.persist(hold("h-001", work3.getId(), student1.getId(), copy6.getId(),
@@ -144,7 +187,7 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     private Policy policy(String id, UserCategory category, int maxLoans, int loanDays, int maxRenewals,
                            int blockDays, PenaltyType type, String amount, int pickupDays, Instant now) {
-        var p = new Policy();
+        var p = instantiate(Policy.class);
         set(p, "id", new PolicyId(id));
         set(p, "userCategory", category);
         set(p, "maxLoans", maxLoans);
@@ -160,7 +203,7 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     private User user(String id, String firstName, String lastName, String email,
                        String hash, UserCategory category, UserStatus status, Instant now) {
-        var u = new User();
+        var u = instantiate(User.class);
         set(u, "id", new UserId(id));
         set(u, "firstName", firstName);
         set(u, "lastName", lastName);
@@ -174,7 +217,7 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     private Loan loan(String id, CopyId copyId, UserId userId, Instant startAt, Instant dueAt,
                        int renewCount, LoanStatus status, String borrowKey, Instant returnedAt) {
-        var l = new Loan();
+        var l = instantiate(Loan.class);
         set(l, "id", new LoanId(id));
         set(l, "copyId", copyId);
         set(l, "userId", userId);
@@ -189,7 +232,7 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     private Hold hold(String id, WorkId workId, UserId userId, CopyId copyId,
                        HoldStatus status, int position, Instant createdAt, Instant pickupUntil) {
-        var h = new Hold();
+        var h = instantiate(Hold.class);
         set(h, "id", new HoldId(id));
         set(h, "workId", workId);
         set(h, "userId", userId);
@@ -203,7 +246,7 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     private Penalty penalty(String id, UserId userId, String reason, BigDecimal amount,
                              PenaltyStatus status, Instant createdAt, Instant clearedAt) {
-        var p = new Penalty();
+        var p = instantiate(Penalty.class);
         set(p, "id", new PenaltyId(id));
         set(p, "userId", userId);
         set(p, "reason", reason);
@@ -212,6 +255,16 @@ public class DatabaseSeeder implements ApplicationRunner {
         set(p, "createdAt", createdAt);
         set(p, "clearedAt", clearedAt);
         return p;
+    }
+
+    private <T> T instantiate(Class<T> clazz) {
+        try {
+            var constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Seed: cannot instantiate " + clazz.getSimpleName(), e);
+        }
     }
 
     private void set(Object target, String field, Object value) {
@@ -232,4 +285,5 @@ public class DatabaseSeeder implements ApplicationRunner {
             throw e;
         }
     }
+    } // SeedService
 }

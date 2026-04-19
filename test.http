@@ -1,133 +1,59 @@
 ### ============================================================
-### VARIABLES
+### VARIABLES — IDs fixes injectés par le DatabaseSeeder
 ### ============================================================
 
 @base = http://localhost:8080
 @contentType = application/json
 
-### ============================================================
-### SEED — Données pré-chargées au démarrage (profil dev)
-### ============================================================
-### Le DatabaseSeeder s'exécute automatiquement au démarrage.
-### Comptes disponibles (mot de passe : password123) :
-###   admin@univ.fr | bibliothecaire@univ.fr | etudiant@univ.fr | etudiant2@univ.fr | enseignant@univ.fr
-###
-### IDs fixes utilisables directement dans les requêtes ci-dessous :
-###   Users    : u-admin-001 | u-lib-001 | u-stu-001 | u-stu-002 | u-tea-001
-###   Works    : w-001 (Clean Code) | w-002 (Design Patterns) | w-003 (Pragmatic Programmer)
-###   Copies   : c-001 (dispo) | c-002 (emprunté) | c-003 (dispo) | c-004 (emprunté/retard) | c-005 (dispo) | c-006 (réservé)
-###   Loans    : l-001 (actif) | l-002 (retard) | l-003 (retourné) | l-004 (retourné)
-###   Holds    : h-001 (ready) | h-002 (queued) | h-003 (cancelled)
-###   Penalties: p-001 (pending) | p-002 (cleared)
+### Comptes (mot de passe : password123)
+### admin@univ.fr | bibliothecaire@univ.fr | etudiant@univ.fr | etudiant2@univ.fr | enseignant@univ.fr
+
+### IDs utilisateurs
+@adminId     = u-admin-001
+@librarianId = u-lib-001
+@student1Id  = u-stu-001
+@student2Id  = u-stu-002
+@teacherId   = u-tea-001
+
+### IDs ouvrages
+@work1Id = w-001
+@work2Id = w-002
+@work3Id = w-003
+@work4Id = w-004
+
+### IDs exemplaires
+@copy1Id = c-001
+@copy2Id = c-002
+@copy3Id = c-003
+@copy5Id = c-005
+@copy7Id = c-007
+
+### IDs prêts
+@loan1Id = l-001
+@loan2Id = l-002
+@loan5Id = l-005
+@loan6Id = l-006
+
+### IDs réservations
+@hold1Id = h-001
+@hold2Id = h-002
+
+### IDs pénalités
+@penalty1Id = p-001
+@penalty2Id = p-002
+
+### Tokens — coller après login
+@tokenAdmin     = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1LWFkbWluLTAwMSIsImVtYWlsIjoiYWRtaW5AdW5pdi5mciIsInJvbGVzIjpbIlJPTEVfQURNSU4iXSwiaWF0IjoxNzc2NjExNjkwLCJleHAiOjE3NzY2OTgwOTB9.MYrRGAx163yJAl3S7dW3W1IaIcqFGVtPXXrJ2qS8uSQzFSsLUXygye-fmLd2S7xwGktMKAcmzwXNfANONGK14Q
+@tokenLibrarian = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1LWxpYi0wMDEiLCJlbWFpbCI6ImJpYmxpb3RoZWNhaXJlQHVuaXYuZnIiLCJyb2xlcyI6WyJST0xFX0xJQlJBUklBTiJdLCJpYXQiOjE3NzY2MTE3MzIsImV4cCI6MTc3NjY5ODEzMn0.mEGHKr4CZoT8OcGOKpeAL9aW9IMV-Wyv5hMui3lDbvlgmDUpJSTmAzeBG2b3jQ93fJ_raJzAycYoG_Yr1ZAeTg
+@tokenStudent   = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1LXN0dS0wMDEiLCJlbWFpbCI6ImV0dWRpYW50QHVuaXYuZnIiLCJyb2xlcyI6WyJST0xFX1JFQURFUiJdLCJpYXQiOjE3NzY2MTE3NzMsImV4cCI6MTc3NjY5ODE3M30.aOixwIxnq48oP1fKOI-xqR5SiHsWVQ4w5fE_BYgRRtQTtjNU-ihjZhUJTWAmjEPMJKu9M3z3n0NtWGLqz6iwWA
+@tokenTeacher   = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1LXRlYS0wMDEiLCJlbWFpbCI6ImVuc2VpZ25hbnRAdW5pdi5mciIsInJvbGVzIjpbIlJPTEVfUkVBREVSIl0sImlhdCI6MTc3NjYxMTgwMSwiZXhwIjoxNzc2Njk4MjAxfQ.pQb6x_ktou1-6TcLlusULcTNuOKTFTulAkwLiuoGLhlpvAKNctVR9PbvhdN_2gFZx8rMAjldRPgo6RrOO4vq8g
+
 
 ### ============================================================
-### BOOTSTRAP — Créer le premier compte ADMIN (si seed non utilisé)
-### ============================================================
-### Le premier admin ne peut pas être créé via l'API (pas encore de token).
-### Insérer directement en base avec le hash BCrypt de "password123" :
-###
-### INSERT INTO users (technical_id, id, first_name, last_name, email, password_hash, category, status, created_at)
-### VALUES (
-###   nextval('user_seq'),
-###   gen_random_uuid()::text,
-###   'Admin', 'Système', 'admin@univ.fr',
-###   '$2a$10$4a2C9MMIU.YWSGqeuOyPB.UrIlt8KMPy0635ExrWLwrL7fBMbp76K',
-###   'ADMIN', 'ACTIVE', now()
-### );
-###
-### Ensuite utiliser le token admin pour créer les autres comptes.
-
-### ============================================================
-### CREATION DES COMPTES (nécessite token ADMIN)
+### 1. AUTHENTIFICATION
 ### ============================================================
 
-@tokenAdmin = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZkVaRkVKT0VKSVBFRkY0NTQ1UlIiLCJlbWFpbCI6ImFkbWluQHVuaXYuZnIiLCJyb2xlcyI6WyJST0xFX0FETUlOIl0sImlhdCI6MTc3NjYwOTUyMiwiZXhwIjoxNzc2Njk1OTIyfQ.o31XHCkGodRmu_XxrAxHR-lBmopeb_az9DxPPL3Swz32H7Fq89MQv-oGCcWOpdymEXlkT7OxNBlWQpYPZFmuJg
-
-### Créer un compte STUDENT
-POST {{base}}/api/users
-Authorization: Bearer {{tokenAdmin}}
-Content-Type: {{contentType}}
-
-{
-  "firstName": "Lucas",
-  "lastName": "Bernard",
-  "email": "etudiant@univ.fr",
-  "password": "password123",
-  "category": "STUDENT"
-}
-
-###
-
-### Créer un compte TEACHER
-POST {{base}}/api/users
-Authorization: Bearer {{tokenAdmin}}
-Content-Type: {{contentType}}
-
-{
-  "firstName": "Sophie",
-  "lastName": "Leclerc",
-  "email": "enseignant@univ.fr",
-  "password": "password123",
-  "category": "TEACHER"
-}
-
-###
-
-### Créer un compte LIBRARIAN
-POST {{base}}/api/users
-Authorization: Bearer {{tokenAdmin}}
-Content-Type: {{contentType}}
-
-{
-  "firstName": "Marie",
-  "lastName": "Martin",
-  "email": "bibliothecaire@univ.fr",
-  "password": "password123",
-  "category": "LIBRARIAN"
-}
-
-###
-
-### Créer un second compte ADMIN
-POST {{base}}/api/users
-Authorization: Bearer {{tokenAdmin}}
-Content-Type: {{contentType}}
-
-{
-  "firstName": "Pierre",
-  "lastName": "Admin",
-  "email": "admin2@univ.fr",
-  "password": "password123",
-  "category": "ADMIN"
-}
-
-### ============================================================
-### AUTH — Obtenir les tokens (à exécuter après création des comptes)
-### ============================================================
-
-### Login STUDENT → copier le accessToken dans @tokenReader
-POST {{base}}/api/auth/login
-Content-Type: {{contentType}}
-
-{
-  "email": "etudiant@univ.fr",
-  "password": "password123"
-}
-
-###
-
-### Login LIBRARIAN → copier le accessToken dans @tokenLibrarian
-POST {{base}}/api/auth/login
-Content-Type: {{contentType}}
-
-{
-  "email": "bibliothecaire@univ.fr",
-  "password": "password123"
-}
-
-###
-
-### Login ADMIN → copier le accessToken dans @tokenAdmin
+### [OK 200] Login admin → copier accessToken dans @tokenAdmin
 POST {{base}}/api/auth/login
 Content-Type: {{contentType}}
 
@@ -138,7 +64,62 @@ Content-Type: {{contentType}}
 
 ###
 
-### Refresh token
+### [OK 200] Login bibliothécaire → copier accessToken dans @tokenLibrarian
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "bibliothecaire@univ.fr",
+  "password": "password123"
+}
+
+###
+
+### [OK 200] Login étudiant → copier accessToken dans @tokenStudent
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "etudiant@univ.fr",
+  "password": "password123"
+}
+
+###
+
+### [OK 200] Login enseignant → copier accessToken dans @tokenTeacher
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "enseignant@univ.fr",
+  "password": "password123"
+}
+
+###
+
+### [401] Login avec mauvais mot de passe
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@univ.fr",
+  "password": "mauvais"
+}
+
+###
+
+### [401] Login avec email inconnu
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "inconnu@univ.fr",
+  "password": "password123"
+}
+
+###
+
+### [200] Refresh token
 POST {{base}}/api/auth/refresh
 Content-Type: {{contentType}}
 
@@ -146,131 +127,108 @@ Content-Type: {{contentType}}
   "refreshToken": "COLLER_LE_REFRESH_TOKEN_ICI"
 }
 
+
 ### ============================================================
-### CATALOGUE — Public (pas de token requis)
+### 2. CATALOGUE — Lecture publique (sans token)
 ### ============================================================
 
-### Rechercher des ouvrages
+### [200] Rechercher tous les ouvrages
 GET {{base}}/api/works
 
 ###
 
-### Rechercher avec filtres
-GET {{base}}/api/works?title=java&authors=gosling
+### [200] Rechercher par titre
+GET {{base}}/api/works?title=clean
 
 ###
 
-### Détail d'un ouvrage
-GET {{base}}/api/works/COLLER_UN_WORK_ID_ICI
-
-
-### ============================================================
-### READER (étudiant / enseignant)
-### ============================================================
-
-@tokenReader = COLLER_LE_TOKEN_READER_ICI
-
-### Consulter ses prêts
-GET {{base}}/api/loans?userId=COLLER_UN_USER_ID_ICI
-Authorization: Bearer {{tokenReader}}
+### [200] Rechercher par auteur
+GET {{base}}/api/works?authors=Martin
 
 ###
 
-### Prolonger un prêt
-POST {{base}}/api/loans/COLLER_UN_LOAN_ID_ICI/renew
-Authorization: Bearer {{tokenReader}}
+### [200] Fiche ouvrage avec exemplaires (Clean Code)
+GET {{base}}/api/works/{{work1Id}}
 
 ###
 
-### Faire une réservation
-POST {{base}}/api/holds
-Authorization: Bearer {{tokenReader}}
-Content-Type: {{contentType}}
-
-{
-  "workId": "COLLER_UN_WORK_ID_ICI",
-  "userId": "COLLER_UN_USER_ID_ICI"
-}
+### [200] Fiche ouvrage — Design Patterns
+GET {{base}}/api/works/{{work2Id}}
 
 ###
 
-### Annuler une réservation
-POST {{base}}/api/holds/COLLER_UN_HOLD_ID_ICI/cancel
-Authorization: Bearer {{tokenReader}}
+### [404] Ouvrage inexistant
+GET {{base}}/api/works/ouvrage-inexistant
 
 ###
 
-### Consulter ses pénalités (refusé — LIBRARIAN requis)
-GET {{base}}/api/penalties?userId=COLLER_UN_USER_ID_ICI
-Authorization: Bearer {{tokenReader}}
-
-
-### ============================================================
-### LIBRARIAN
-### ============================================================
-
-@tokenLibrarian = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlN2JiYjNmZC00ODA3LTQ5NjAtOGRhYS1iZDFiMmFiNzg2YmMiLCJlbWFpbCI6ImJpYmxpb3RoZWNhaXJlQHVuaXYuZnIiLCJyb2xlcyI6WyJST0xFX0xJQlJBUklBTiJdLCJpYXQiOjE3NzY2MDk2NDMsImV4cCI6MTc3NjY5NjA0M30.bLCxEmveXL3xOlF5Yw-j1LWFFnMoovMFkS86xW5jrtJSqDP7USQAyvlPRCzV2vtNSvT7HrwQs-1lW2qObCGnXQ
-
-### Créer un utilisateur
-POST {{base}}/api/users
-Authorization: Bearer {{tokenLibrarian}}
-Content-Type: {{contentType}}
-
-{
-  "firstName": "Jean",
-  "lastName": "Dupont",
-  "email": "etudiant@univ.fr",
-  "password": "password123",
-  "category": "STUDENT"
-}
-
-###
-
-### Lister les utilisateurs
+### [401] Accès protégé sans token
 GET {{base}}/api/users
-Authorization: Bearer {{tokenLibrarian}}
 
-###
 
-### Bloquer un utilisateur
-PATCH {{base}}/api/users/COLLER_UN_USER_ID_ICI/block
-Authorization: Bearer {{tokenLibrarian}}
+### ============================================================
+### 3. CATALOGUE — Gestion (Bibliothécaire)
+### ============================================================
 
-###
-
-### Créer un ouvrage
+### [201] Créer un ouvrage
 POST {{base}}/api/works
 Authorization: Bearer {{tokenLibrarian}}
 Content-Type: {{contentType}}
 
 {
-  "title": "Clean Code",
-  "isbn": "9780132350884",
-  "authors": "Robert C. Martin",
-  "publisher": "Prentice Hall",
-  "year": 2008,
+  "title": "Domain-Driven Design",
+  "isbn": "9780321125217",
+  "authors": "Eric Evans",
+  "publisher": "Addison-Wesley",
+  "year": 2003,
   "language": "EN",
-  "subjects": "Software Engineering"
+  "subjects": "Architecture logicielle"
 }
 
 ###
 
-### Ajouter un exemplaire
-POST {{base}}/api/works/0753f42f-dfce-4f03-bb59-943f87daa5c6/copies
+### [400] Créer ouvrage sans titre (validation)
+POST {{base}}/api/works
 Authorization: Bearer {{tokenLibrarian}}
 Content-Type: {{contentType}}
 
 {
-  "barcode": "BC0012024",
+  "isbn": "9780321125217",
+  "authors": "Eric Evans"
+}
+
+###
+
+### [201] Ajouter un exemplaire à Clean Code
+POST {{base}}/api/works/{{work1Id}}/copies
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+
+{
+  "barcode": "BCNEW001",
   "campusId": "CAMPUS-A",
-  "shelf": "INF-42",
+  "shelf": "INF-01",
   "condition": "NEUF"
 }
 
 ###
 
-### Changer le statut d'un exemplaire
-PATCH {{base}}/api/copies/COLLER_UN_COPY_ID_ICI/status
+### [409] Ajouter exemplaire avec code-barres déjà existant
+POST {{base}}/api/works/{{work1Id}}/copies
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+
+{
+  "barcode": "BC001",
+  "campusId": "CAMPUS-A",
+  "shelf": "INF-01",
+  "condition": "NEUF"
+}
+
+###
+
+### [200] Mettre un exemplaire en traitement
+PATCH {{base}}/api/copies/{{copy5Id}}/status
 Authorization: Bearer {{tokenLibrarian}}
 Content-Type: {{contentType}}
 
@@ -280,109 +238,319 @@ Content-Type: {{contentType}}
 
 ###
 
-### Enregistrer un emprunt
+### [403] Étudiant ne peut pas modifier un exemplaire
+PATCH {{base}}/api/copies/{{copy5Id}}/status
+Authorization: Bearer {{tokenStudent}}
+Content-Type: {{contentType}}
+
+{
+  "status": "IN_PROCESSING"
+}
+
+
+### ============================================================
+### 4. CIRCULATION — Emprunt & retour (Bibliothécaire)
+### ============================================================
+
+### [201] Emprunter un exemplaire disponible (copy1)
 POST {{base}}/api/loans
 Authorization: Bearer {{tokenLibrarian}}
 Content-Type: {{contentType}}
-Idempotency-Key: loan-001-2024
+Idempotency-Key: test-borrow-new-001
 
 {
-  "copyId": "COLLER_UN_COPY_ID_ICI",
-  "userId": "COLLER_UN_USER_ID_ICI"
+  "copyId": "{{copy1Id}}",
+  "userId": "{{student1Id}}"
 }
 
 ###
 
-### Enregistrer un retour
-POST {{base}}/api/loans/return?copyId=COLLER_UN_COPY_ID_ICI
+### [201] Idempotence — même clé = même prêt retourné
+POST {{base}}/api/loans
 Authorization: Bearer {{tokenLibrarian}}
-Idempotency-Key: return-001-2024
+Content-Type: {{contentType}}
+Idempotency-Key: test-borrow-new-001
+
+{
+  "copyId": "{{copy1Id}}",
+  "userId": "{{student1Id}}"
+}
 
 ###
 
-### Déclarer un exemplaire perdu
-POST {{base}}/api/loans/COLLER_UN_LOAN_ID_ICI/lost
+### [409] Emprunter un exemplaire déjà emprunté
+POST {{base}}/api/loans
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+Idempotency-Key: test-borrow-fail-001
+
+{
+  "copyId": "{{copy2Id}}",
+  "userId": "{{student1Id}}"
+}
+
+###
+
+### [409] Emprunter avec compte bloqué (student2)
+POST {{base}}/api/loans
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+Idempotency-Key: test-borrow-fail-002
+
+{
+  "copyId": "{{copy3Id}}",
+  "userId": "{{student2Id}}"
+}
+
+###
+
+### [200] Retourner un exemplaire (copy2 — prêt l-001 actif)
+POST {{base}}/api/loans/return?copyId={{copy2Id}}
+Authorization: Bearer {{tokenLibrarian}}
+Idempotency-Key: test-return-001
+
+###
+
+### [200] Idempotence retour — même clé = pas d'erreur
+POST {{base}}/api/loans/return?copyId={{copy2Id}}
+Authorization: Bearer {{tokenLibrarian}}
+Idempotency-Key: test-return-001
+
+###
+
+### [200] Déclarer un exemplaire perdu (prêt l-005)
+POST {{base}}/api/loans/{{loan5Id}}/lost
 Authorization: Bearer {{tokenLibrarian}}
 
 ###
 
-### Valider le retrait d'une réservation
-POST {{base}}/api/holds/COLLER_UN_HOLD_ID_ICI/pickup
+### [403] Étudiant ne peut pas enregistrer un emprunt
+POST {{base}}/api/loans
+Authorization: Bearer {{tokenStudent}}
+Content-Type: {{contentType}}
+
+{
+  "copyId": "{{copy3Id}}",
+  "userId": "{{student1Id}}"
+}
+
+
+### ============================================================
+### 5. CIRCULATION — Consultation & prolongation (Reader)
+### ============================================================
+
+### [200] Consulter ses prêts (student1)
+GET {{base}}/api/loans?userId={{student1Id}}
+Authorization: Bearer {{tokenStudent}}
+
+###
+
+### [200] Consulter prêts teacher
+GET {{base}}/api/loans?userId={{teacherId}}
+Authorization: Bearer {{tokenTeacher}}
+
+###
+
+### [200] Prolonger un prêt actif (l-001, renewCount=0 → 1)
+POST {{base}}/api/loans/{{loan1Id}}/renew
+Authorization: Bearer {{tokenStudent}}
+
+###
+
+### [409] Prolonger quand quota max atteint (l-006, renewCount=2 pour étudiant max=2)
+POST {{base}}/api/loans/{{loan6Id}}/renew
+Authorization: Bearer {{tokenStudent}}
+
+###
+
+### [409] Prolonger un prêt en retard (l-002)
+POST {{base}}/api/loans/{{loan2Id}}/renew
+Authorization: Bearer {{tokenStudent}}
+
+
+### ============================================================
+### 6. RÉSERVATIONS (Hold)
+### ============================================================
+
+### [201] Réserver work2 — copy3 disponible → READY_FOR_PICKUP immédiat
+POST {{base}}/api/holds
+Authorization: Bearer {{tokenTeacher}}
+Content-Type: {{contentType}}
+
+{
+  "workId": "{{work2Id}}",
+  "userId": "{{teacherId}}"
+}
+
+###
+
+### [201] Réserver work4 — toutes copies ON_LOAN → QUEUED
+POST {{base}}/api/holds
+Authorization: Bearer {{tokenStudent}}
+Content-Type: {{contentType}}
+
+{
+  "workId": "{{work4Id}}",
+  "userId": "{{student1Id}}"
+}
+
+###
+
+### [409] Réserver work4 une 2ème fois (doublon)
+POST {{base}}/api/holds
+Authorization: Bearer {{tokenStudent}}
+Content-Type: {{contentType}}
+
+{
+  "workId": "{{work4Id}}",
+  "userId": "{{student1Id}}"
+}
+
+###
+
+### [200] Annuler une réservation (h-002 QUEUED)
+POST {{base}}/api/holds/{{hold2Id}}/cancel
+Authorization: Bearer {{tokenTeacher}}
+
+###
+
+### [200] Valider le retrait d'une réservation (h-001 READY_FOR_PICKUP)
+POST {{base}}/api/holds/{{hold1Id}}/pickup
 Authorization: Bearer {{tokenLibrarian}}
 
 ###
 
-### Créer une pénalité
+### [403] Étudiant ne peut pas valider un retrait
+POST {{base}}/api/holds/{{hold1Id}}/pickup
+Authorization: Bearer {{tokenStudent}}
+
+
+### ============================================================
+### 7. UTILISATEURS (Bibliothécaire / Admin)
+### ============================================================
+
+### [200] Lister tous les utilisateurs
+GET {{base}}/api/users
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [200] Rechercher par catégorie
+GET {{base}}/api/users?category=STUDENT
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [200] Rechercher par statut bloqué
+GET {{base}}/api/users?status=BLOCKED
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [200] Détail d'un utilisateur
+GET {{base}}/api/users/{{student1Id}}
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [201] Créer un nouvel étudiant
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Paul",
+  "lastName": "Durand",
+  "email": "paul.durand@univ.fr",
+  "password": "password123",
+  "category": "STUDENT"
+}
+
+###
+
+### [409] Créer avec email déjà utilisé
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Test",
+  "lastName": "Doublon",
+  "email": "etudiant@univ.fr",
+  "password": "password123",
+  "category": "STUDENT"
+}
+
+###
+
+### [200] Bloquer student2
+PATCH {{base}}/api/users/{{student2Id}}/block
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [200] Débloquer student2 (après levée pénalité)
+PATCH {{base}}/api/users/{{student2Id}}/unblock
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [403] Étudiant ne peut pas accéder aux utilisateurs
+GET {{base}}/api/users
+Authorization: Bearer {{tokenStudent}}
+
+
+### ============================================================
+### 8. PÉNALITÉS (Bibliothécaire)
+### ============================================================
+
+### [200] Consulter pénalités de student2
+GET {{base}}/api/penalties?userId={{student2Id}}
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [201] Créer une pénalité
 POST {{base}}/api/penalties
 Authorization: Bearer {{tokenLibrarian}}
 Content-Type: {{contentType}}
 
 {
-  "userId": "COLLER_UN_USER_ID_ICI",
-  "reason": "Retard de 7 jours",
-  "amount": 0.70
+  "userId": "{{student1Id}}",
+  "reason": "Retard de 5 jours sur 'Clean Code'",
+  "amount": 0.50
 }
 
 ###
 
-### Lever une pénalité
-POST {{base}}/api/penalties/COLLER_UN_PENALTY_ID_ICI/clear
+### [200] Lever la pénalité p-001
+POST {{base}}/api/penalties/{{penalty1Id}}/clear
 Authorization: Bearer {{tokenLibrarian}}
 
 ###
 
-### Consulter les pénalités d'un utilisateur
-GET {{base}}/api/penalties?userId=COLLER_UN_USER_ID_ICI
-Authorization: Bearer {{tokenLibrarian}}
-
-###
-
-### Reporting (refusé — ADMIN requis)
-GET {{base}}/api/reports/top-loans
-Authorization: Bearer {{tokenLibrarian}}
+### [403] Étudiant ne peut pas accéder aux pénalités
+GET {{base}}/api/penalties?userId={{student1Id}}
+Authorization: Bearer {{tokenStudent}}
 
 
 ### ============================================================
-### ADMIN
+### 9. POLITIQUES (Admin uniquement)
 ### ============================================================
 
-### Créer un compte LIBRARIAN
-POST {{base}}/api/users
-Authorization: Bearer {{tokenAdmin}}
-Content-Type: {{contentType}}
-
-{
-  "firstName": "Marie",
-  "lastName": "Martin",
-  "email": "bibliothecaire@univ.fr",
-  "password": "password123",
-  "category": "LIBRARIAN"
-}
-
-###
-
-### Créer un compte ADMIN
-POST {{base}}/api/users
-Authorization: Bearer {{tokenAdmin}}
-Content-Type: {{contentType}}
-
-{
-  "firstName": "Admin",
-  "lastName": "Système",
-  "email": "admin@univ.fr",
-  "password": "password123",
-  "category": "ADMIN"
-}
-
-###
-
-### Consulter la politique STUDENT
+### [200] Consulter la politique étudiante
 GET {{base}}/api/policies/STUDENT
 Authorization: Bearer {{tokenAdmin}}
 
 ###
 
-### Modifier la politique STUDENT
+### [200] Consulter la politique enseignante
+GET {{base}}/api/policies/TEACHER
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### [200] Modifier la politique étudiante
 PUT {{base}}/api/policies/STUDENT
 Authorization: Bearer {{tokenAdmin}}
 Content-Type: {{contentType}}
@@ -399,35 +567,50 @@ Content-Type: {{contentType}}
 
 ###
 
-### Modifier la politique TEACHER
-PUT {{base}}/api/policies/TEACHER
-Authorization: Bearer {{tokenAdmin}}
+### [403] Bibliothécaire ne peut pas modifier les politiques
+PUT {{base}}/api/policies/STUDENT
+Authorization: Bearer {{tokenLibrarian}}
 Content-Type: {{contentType}}
 
 {
-  "maxLoans": 20,
-  "loanDurationDays": 60,
-  "maxRenewals": 3,
-  "overdueBlockThresholdDays": 30,
+  "maxLoans": 5,
+  "loanDurationDays": 21,
+  "maxRenewals": 2,
+  "overdueBlockThresholdDays": 14,
   "penaltyType": "PER_DAY",
-  "penaltyAmount": 0.20,
+  "penaltyAmount": 0.10,
   "pickupDelayDays": 3
 }
 
-###
 
-### Top 10 des ouvrages les plus empruntés
+### ============================================================
+### 10. REPORTING (Admin uniquement)
+### ============================================================
+
+### [200] Top 10 ouvrages les plus empruntés
 GET {{base}}/api/reports/top-loans?limit=10
 Authorization: Bearer {{tokenAdmin}}
 
 ###
 
-### Prêts en retard
+### [200] Prêts en retard
 GET {{base}}/api/reports/overdue
 Authorization: Bearer {{tokenAdmin}}
 
 ###
 
-### Rapport d'acquisitions (dernier mois)
-GET {{base}}/api/reports/acquisitions?from=2026-03-01T00:00:00Z&to=2026-04-30T23:59:59Z
+### [200] Acquisitions sur 2024-2026
+GET {{base}}/api/reports/acquisitions?from=2024-01-01T00:00:00Z&to=2026-12-31T23:59:59Z
 Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### [403] Bibliothécaire ne peut pas accéder au reporting
+GET {{base}}/api/reports/top-loans
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### [403] Étudiant ne peut pas accéder au reporting
+GET {{base}}/api/reports/overdue
+Authorization: Bearer {{tokenStudent}}

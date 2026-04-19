@@ -7,7 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 public class WorkSpecificationBuilder {
 
     public Specification<Work> build(WorkFilters filters) {
-        Specification<Work> spec = Specification.where((Specification<Work>) null);
+        Specification<Work> spec = (root, query, cb) -> cb.conjunction();
         if (filters.title() != null && !filters.title().isBlank()) {
             spec = spec.and(WorkSpecifications.titleLike(filters.title()));
         }
