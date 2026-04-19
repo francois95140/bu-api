@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-interface SpringJpaUserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+public interface SpringJpaUserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByIdValue(String idValue);
 
