@@ -1,5 +1,433 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
+### ============================================================
+### VARIABLES
+### ============================================================
+
+@base = http://localhost:8080
+@contentType = application/json
+
+### ============================================================
+### SEED — Données pré-chargées au démarrage (profil dev)
+### ============================================================
+### Le DatabaseSeeder s'exécute automatiquement au démarrage.
+### Comptes disponibles (mot de passe : password123) :
+###   admin@univ.fr | bibliothecaire@univ.fr | etudiant@univ.fr | etudiant2@univ.fr | enseignant@univ.fr
+###
+### IDs fixes utilisables directement dans les requêtes ci-dessous :
+###   Users    : u-admin-001 | u-lib-001 | u-stu-001 | u-stu-002 | u-tea-001
+###   Works    : w-001 (Clean Code) | w-002 (Design Patterns) | w-003 (Pragmatic Programmer)
+###   Copies   : c-001 (dispo) | c-002 (emprunté) | c-003 (dispo) | c-004 (emprunté/retard) | c-005 (dispo) | c-006 (réservé)
+###   Loans    : l-001 (actif) | l-002 (retard) | l-003 (retourné) | l-004 (retourné)
+###   Holds    : h-001 (ready) | h-002 (queued) | h-003 (cancelled)
+###   Penalties: p-001 (pending) | p-002 (cleared)
+
+### ============================================================
+### BOOTSTRAP — Créer le premier compte ADMIN (si seed non utilisé)
+### ============================================================
+### Le premier admin ne peut pas être créé via l'API (pas encore de token).
+### Insérer directement en base avec le hash BCrypt de "password123" :
+###
+### INSERT INTO users (technical_id, id, first_name, last_name, email, password_hash, category, status, created_at)
+### VALUES (
+###   nextval('user_seq'),
+###   gen_random_uuid()::text,
+###   'Admin', 'Système', 'admin@univ.fr',
+###   '$2a$10$4a2C9MMIU.YWSGqeuOyPB.UrIlt8KMPy0635ExrWLwrL7fBMbp76K',
+###   'ADMIN', 'ACTIVE', now()
+### );
+###
+### Ensuite utiliser le token admin pour créer les autres comptes.
+
+### ============================================================
+### CREATION DES COMPTES (nécessite token ADMIN)
+### ============================================================
+
+@tokenAdmin = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJyZkVaRkVKT0VKSVBFRkY0NTQ1UlIiLCJlbWFpbCI6ImFkbWluQHVuaXYuZnIiLCJyb2xlcyI6WyJST0xFX0FETUlOIl0sImlhdCI6MTc3NjYwOTUyMiwiZXhwIjoxNzc2Njk1OTIyfQ.o31XHCkGodRmu_XxrAxHR-lBmopeb_az9DxPPL3Swz32H7Fq89MQv-oGCcWOpdymEXlkT7OxNBlWQpYPZFmuJg
+
+### Créer un compte STUDENT
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Lucas",
+  "lastName": "Bernard",
+  "email": "etudiant@univ.fr",
+  "password": "password123",
+  "category": "STUDENT"
+}
 
 ###
+
+### Créer un compte TEACHER
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Sophie",
+  "lastName": "Leclerc",
+  "email": "enseignant@univ.fr",
+  "password": "password123",
+  "category": "TEACHER"
+}
+
+###
+
+### Créer un compte LIBRARIAN
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Marie",
+  "lastName": "Martin",
+  "email": "bibliothecaire@univ.fr",
+  "password": "password123",
+  "category": "LIBRARIAN"
+}
+
+###
+
+### Créer un second compte ADMIN
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Pierre",
+  "lastName": "Admin",
+  "email": "admin2@univ.fr",
+  "password": "password123",
+  "category": "ADMIN"
+}
+
+### ============================================================
+### AUTH — Obtenir les tokens (à exécuter après création des comptes)
+### ============================================================
+
+### Login STUDENT → copier le accessToken dans @tokenReader
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "etudiant@univ.fr",
+  "password": "password123"
+}
+
+###
+
+### Login LIBRARIAN → copier le accessToken dans @tokenLibrarian
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "bibliothecaire@univ.fr",
+  "password": "password123"
+}
+
+###
+
+### Login ADMIN → copier le accessToken dans @tokenAdmin
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@univ.fr",
+  "password": "password123"
+}
+
+###
+
+### Refresh token
+POST {{base}}/api/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "COLLER_LE_REFRESH_TOKEN_ICI"
+}
+
+### ============================================================
+### CATALOGUE — Public (pas de token requis)
+### ============================================================
+
+### Rechercher des ouvrages
+GET {{base}}/api/works
+
+###
+
+### Rechercher avec filtres
+GET {{base}}/api/works?title=java&authors=gosling
+
+###
+
+### Détail d'un ouvrage
+GET {{base}}/api/works/COLLER_UN_WORK_ID_ICI
+
+
+### ============================================================
+### READER (étudiant / enseignant)
+### ============================================================
+
+@tokenReader = COLLER_LE_TOKEN_READER_ICI
+
+### Consulter ses prêts
+GET {{base}}/api/loans?userId=COLLER_UN_USER_ID_ICI
+Authorization: Bearer {{tokenReader}}
+
+###
+
+### Prolonger un prêt
+POST {{base}}/api/loans/COLLER_UN_LOAN_ID_ICI/renew
+Authorization: Bearer {{tokenReader}}
+
+###
+
+### Faire une réservation
+POST {{base}}/api/holds
+Authorization: Bearer {{tokenReader}}
+Content-Type: {{contentType}}
+
+{
+  "workId": "COLLER_UN_WORK_ID_ICI",
+  "userId": "COLLER_UN_USER_ID_ICI"
+}
+
+###
+
+### Annuler une réservation
+POST {{base}}/api/holds/COLLER_UN_HOLD_ID_ICI/cancel
+Authorization: Bearer {{tokenReader}}
+
+###
+
+### Consulter ses pénalités (refusé — LIBRARIAN requis)
+GET {{base}}/api/penalties?userId=COLLER_UN_USER_ID_ICI
+Authorization: Bearer {{tokenReader}}
+
+
+### ============================================================
+### LIBRARIAN
+### ============================================================
+
+@tokenLibrarian = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlN2JiYjNmZC00ODA3LTQ5NjAtOGRhYS1iZDFiMmFiNzg2YmMiLCJlbWFpbCI6ImJpYmxpb3RoZWNhaXJlQHVuaXYuZnIiLCJyb2xlcyI6WyJST0xFX0xJQlJBUklBTiJdLCJpYXQiOjE3NzY2MDk2NDMsImV4cCI6MTc3NjY5NjA0M30.bLCxEmveXL3xOlF5Yw-j1LWFFnMoovMFkS86xW5jrtJSqDP7USQAyvlPRCzV2vtNSvT7HrwQs-1lW2qObCGnXQ
+
+### Créer un utilisateur
+POST {{base}}/api/users
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Jean",
+  "lastName": "Dupont",
+  "email": "etudiant@univ.fr",
+  "password": "password123",
+  "category": "STUDENT"
+}
+
+###
+
+### Lister les utilisateurs
+GET {{base}}/api/users
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### Bloquer un utilisateur
+PATCH {{base}}/api/users/COLLER_UN_USER_ID_ICI/block
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### Créer un ouvrage
+POST {{base}}/api/works
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Clean Code",
+  "isbn": "9780132350884",
+  "authors": "Robert C. Martin",
+  "publisher": "Prentice Hall",
+  "year": 2008,
+  "language": "EN",
+  "subjects": "Software Engineering"
+}
+
+###
+
+### Ajouter un exemplaire
+POST {{base}}/api/works/0753f42f-dfce-4f03-bb59-943f87daa5c6/copies
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+
+{
+  "barcode": "BC0012024",
+  "campusId": "CAMPUS-A",
+  "shelf": "INF-42",
+  "condition": "NEUF"
+}
+
+###
+
+### Changer le statut d'un exemplaire
+PATCH {{base}}/api/copies/COLLER_UN_COPY_ID_ICI/status
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+
+{
+  "status": "IN_PROCESSING"
+}
+
+###
+
+### Enregistrer un emprunt
+POST {{base}}/api/loans
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+Idempotency-Key: loan-001-2024
+
+{
+  "copyId": "COLLER_UN_COPY_ID_ICI",
+  "userId": "COLLER_UN_USER_ID_ICI"
+}
+
+###
+
+### Enregistrer un retour
+POST {{base}}/api/loans/return?copyId=COLLER_UN_COPY_ID_ICI
+Authorization: Bearer {{tokenLibrarian}}
+Idempotency-Key: return-001-2024
+
+###
+
+### Déclarer un exemplaire perdu
+POST {{base}}/api/loans/COLLER_UN_LOAN_ID_ICI/lost
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### Valider le retrait d'une réservation
+POST {{base}}/api/holds/COLLER_UN_HOLD_ID_ICI/pickup
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### Créer une pénalité
+POST {{base}}/api/penalties
+Authorization: Bearer {{tokenLibrarian}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "COLLER_UN_USER_ID_ICI",
+  "reason": "Retard de 7 jours",
+  "amount": 0.70
+}
+
+###
+
+### Lever une pénalité
+POST {{base}}/api/penalties/COLLER_UN_PENALTY_ID_ICI/clear
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### Consulter les pénalités d'un utilisateur
+GET {{base}}/api/penalties?userId=COLLER_UN_USER_ID_ICI
+Authorization: Bearer {{tokenLibrarian}}
+
+###
+
+### Reporting (refusé — ADMIN requis)
+GET {{base}}/api/reports/top-loans
+Authorization: Bearer {{tokenLibrarian}}
+
+
+### ============================================================
+### ADMIN
+### ============================================================
+
+### Créer un compte LIBRARIAN
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Marie",
+  "lastName": "Martin",
+  "email": "bibliothecaire@univ.fr",
+  "password": "password123",
+  "category": "LIBRARIAN"
+}
+
+###
+
+### Créer un compte ADMIN
+POST {{base}}/api/users
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Admin",
+  "lastName": "Système",
+  "email": "admin@univ.fr",
+  "password": "password123",
+  "category": "ADMIN"
+}
+
+###
+
+### Consulter la politique STUDENT
+GET {{base}}/api/policies/STUDENT
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### Modifier la politique STUDENT
+PUT {{base}}/api/policies/STUDENT
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "maxLoans": 5,
+  "loanDurationDays": 21,
+  "maxRenewals": 2,
+  "overdueBlockThresholdDays": 14,
+  "penaltyType": "PER_DAY",
+  "penaltyAmount": 0.10,
+  "pickupDelayDays": 3
+}
+
+###
+
+### Modifier la politique TEACHER
+PUT {{base}}/api/policies/TEACHER
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "maxLoans": 20,
+  "loanDurationDays": 60,
+  "maxRenewals": 3,
+  "overdueBlockThresholdDays": 30,
+  "penaltyType": "PER_DAY",
+  "penaltyAmount": 0.20,
+  "pickupDelayDays": 3
+}
+
+###
+
+### Top 10 des ouvrages les plus empruntés
+GET {{base}}/api/reports/top-loans?limit=10
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### Prêts en retard
+GET {{base}}/api/reports/overdue
+Authorization: Bearer {{tokenAdmin}}
+
+###
+
+### Rapport d'acquisitions (dernier mois)
+GET {{base}}/api/reports/acquisitions?from=2026-03-01T00:00:00Z&to=2026-04-30T23:59:59Z
+Authorization: Bearer {{tokenAdmin}}

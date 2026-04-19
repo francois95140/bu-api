@@ -1,6 +1,8 @@
 spring:
   application:
     name: bibliotheque
+  profiles:
+    active: dev
 
   datasource:
     driver-class-name: org.postgresql.Driver

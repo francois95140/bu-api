@@ -5,6 +5,7 @@ import fr.esgi.bibliotheque.catalog.application.gateways.WorkRepository;
 import fr.esgi.bibliotheque.catalog.application.models.AddCopyRequest;
 import fr.esgi.bibliotheque.catalog.domain.*;
 import fr.esgi.bibliotheque.shared.DomainIdGenerator;
+import fr.esgi.bibliotheque.shared.TimeProvider;
 import fr.esgi.bibliotheque.shared.error.BusinessException;
 import fr.esgi.bibliotheque.shared.error.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,12 +26,13 @@ class AddCopyHandlerTest {
     @Mock WorkRepository workRepository;
     @Mock CopyRepository copyRepository;
     @Mock DomainIdGenerator idGenerator;
+    @Mock TimeProvider timeProvider;
     AddCopyHandler handler;
     Work existingWork;
 
     @BeforeEach
     void setUp() {
-        handler = new AddCopyHandler(workRepository, copyRepository, idGenerator);
+        handler = new AddCopyHandler(workRepository, copyRepository, idGenerator, timeProvider);
         existingWork = Work.create(new WorkId("work-1"), "9782070360024", "Les Misérables",
             "Victor Hugo", "Gallimard", 1862, "Roman", "fr", null);
     }
