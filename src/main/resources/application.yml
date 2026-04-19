@@ -30,3 +30,9 @@ management:
     web:
       exposure:
         include: health,info,loggers
+
+# Justification : la clé JWT doit être surchargée par variable d'environnement JWT_SECRET en production (jamais en dur)
+jwt:
+  secret: ${JWT_SECRET:bu-api-default-dev-secret-must-be-at-least-256-bits-long-in-prod}
+  expiration-ms: 86400000
+  refresh-expiration-ms: 604800000
