@@ -8,6 +8,7 @@ import fr.esgi.bibliotheque.catalog.domain.Copy;
 import fr.esgi.bibliotheque.catalog.domain.CopyId;
 import fr.esgi.bibliotheque.catalog.domain.WorkId;
 import fr.esgi.bibliotheque.shared.DomainIdGenerator;
+import fr.esgi.bibliotheque.shared.TimeProvider;
 import fr.esgi.bibliotheque.shared.error.BusinessException;
 import fr.esgi.bibliotheque.shared.error.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -23,12 +24,14 @@ public class AddCopyHandler implements AddCopy {
     private final WorkRepository workRepository;
     private final CopyRepository copyRepository;
     private final DomainIdGenerator idGenerator;
+    private final TimeProvider timeProvider;
 
     public AddCopyHandler(WorkRepository workRepository, CopyRepository copyRepository,
-                           DomainIdGenerator idGenerator) {
+                           DomainIdGenerator idGenerator, TimeProvider timeProvider) {
         this.workRepository = workRepository;
         this.copyRepository = copyRepository;
         this.idGenerator = idGenerator;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class AddCopyHandler implements AddCopy {
         }
         CopyId id = new CopyId(idGenerator.generate());
         Copy copy = Copy.create(id, request.barcode(), work, request.campusId(),
-            request.shelf(), request.condition());
+            request.shelf(), request.condition(), timeProvider.now());
         copyRepository.save(copy);
         log.info("Copy created with id={} for workId={}", id.value(), workId.value());
         return id;

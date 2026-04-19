@@ -3,6 +3,8 @@ package fr.esgi.bibliotheque.catalog.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "copies")
 @Getter
@@ -32,9 +34,10 @@ public class Copy {
     private String campusId;
     private String shelf;
     private String condition;
+    private Instant createdAt;
 
     public static Copy create(CopyId id, String barcode, Work work,
-                               String campusId, String shelf, String condition) {
+                               String campusId, String shelf, String condition, Instant createdAt) {
         return Copy.builder()
             .id(id)
             .barcode(barcode)
@@ -43,6 +46,7 @@ public class Copy {
             .campusId(campusId)
             .shelf(shelf)
             .condition(condition)
+            .createdAt(createdAt)
             .build();
     }
 
